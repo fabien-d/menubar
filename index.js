@@ -68,9 +68,10 @@ module.exports = function create (opts) {
       } else {
         var boundsWorkArea = electronScreen.getDisplayNearestPoint(bounds).workArea
         // make sure it's a different screen before modifying the bounds object
-        if ( boundsWorkArea.x !== activeWorkArea.x ) {
+        if (boundsWorkArea.x !== activeWorkArea.x) {
           var offsetX = boundsWorkArea.x + boundsWorkArea.width - bounds.x
           bounds.x = activeWorkArea.width + activeWorkArea.x - offsetX
+          bounds.y = activeWorkArea.y
         }
       }
 
