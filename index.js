@@ -51,21 +51,30 @@ module.exports = function create (opts) {
       if (menubar.window && menubar.window.isVisible()) return hideWindow()
 
       // workarea takes the taskbar/menubar height in consideration
-      var size = electronScreen.getDisplayNearestPoint(electronScreen.getCursorScreenPoint()).workArea
+      var activeWorkArea = electronScreen.getDisplayNearestPoint(electronScreen.getCursorScreenPoint()).workArea
 
       if (bounds) cachedBounds = bounds
 
       // ensure bounds is an object
       bounds = bounds || {}
 
-      // bounds may not be populated on all OSes
-      if (bounds.x === 0 && bounds.y === 0) {
-        // default to bottom on windows
-        if (process.platform === 'win32') bounds.y = size.height - opts.height
-        bounds.x = size.width + size.x - (opts.width / 2) // default to right
-        cachedBounds = bounds
+      // default to bottom on windows if `bounds.y` is not set
+      // leave it open to use prepopulated `bounds` if/when windows sets it
+      if (process.platform === 'win32' && bounds.y === 0) bounds.y = activeWorkArea.height - opts.height
+
+      if (bounds.x === 0) {
+        // default to right
+        bounds.x = activeWorkArea.width + activeWorkArea.x - (opts.width / 2)
+      } else {
+        var boundsWorkArea = electronScreen.getDisplayNearestPoint(bounds).workArea
+        // make sure it's a different screen before modifying the bounds object
+        if ( boundsWorkArea.x !== activeWorkArea.x ) {
+          var offsetX = boundsWorkArea.x + boundsWorkArea.width - bounds.x
+          bounds.x = activeWorkArea.width + activeWorkArea.x - offsetX
+        }
       }
 
+      cachedBounds = bounds
       showWindow(cachedBounds)
     }
 
